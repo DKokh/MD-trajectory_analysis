@@ -234,19 +234,20 @@ def separate_IFP(complete_list_IFP):
     return(resi_list_sorted,resi_name_list_sorted,ifp_list)
 
 ########################################################################
+#  depricated, will be removed in the next version
 ########################################################################
 def get_from_prop(list_x, df,list_l= [],threshold = 0.1):
     """
-    
+    This function extracts a su-set of the pkl file for the user-defined list of IFPs and generated its properies
     Parameters:
-    list_x
+    list_x - list of IFPs to be analyzed
     df,list_l= []
     threshold = 0.1
     
     Returns:
-    ar
-    ar_SD
-    x
+    ar - array of mean values
+    ar_SD - array of standard deviations
+    x - list of IFPs with mean below a pre-defined threshold
     
     """
     if len(list_l) == 0:
@@ -321,13 +322,19 @@ def unify_resi(list_resi, df,resi_list_sorted,list_l= [], threshold=3):
     return(ar_complete,ar_SD_complete)
 
 ########################################################################
+#    depricated, will be removed in the next version
 ########################################################################
 def ar_complete_ligand(ligand,df_tot,resi_list_sorted,properties=["RE","AR","HD","HA","HY","WB"]):
     """
-    
+    combines an numpy array of selected part of the complete IFP dataset
+    selection can be done by ligand, residue, and IFP properties
     Parameters:
-    
+    ligand - ligand name
+    df_tot - ifp database 
+    resi_list_sorted - list of residues 
+    properties - ifp properties
     Returns:
+    mean value and STD for each property
     
     """
     df_ligand = df_tot[df_tot.ligand == ligand]
@@ -392,13 +399,14 @@ def read_databases(d,name_template,name_len = 8):
 
 
 ########################################################################
+# depricated, will be removed in the next version
 ########################################################################
 def clean_ramd(df_tot,threshold = 0.9,check_z = False):
     """
     Parameters:
     check_z - check if z coordinate is changed and drop trajectories where it did not
     
-    Parameters:
+    Returns:
     """
     df_tot_new = pd.DataFrame(columns=df_tot.columns.tolist())
     if "ligand" in np.unique(df_tot.columns.values):
@@ -439,9 +447,13 @@ def clean_ramd(df_tot,threshold = 0.9,check_z = False):
 ######################################################################
 def GRID_PRINT(file_name,pdrv,gr_orgn,gr_dim,grid_stp):
     """
-    
+    function that saved dx grid 
     Parameters:
-    
+    file_name - name of the grid file
+    pdrv - grid
+    gr_orgn - grid origin
+    gr_dim - grid dimention
+    grid_stp - grid setp
     Returns:
     
     """
@@ -477,8 +489,8 @@ def Map_3D_grid(df_tot_to_save,filename):
     Mapping ligand motion trajectory from the IFP file on the 3D grid and saving the grid in dx format
     
     Parameters:
-    df_tot_to_save
-    filename
+    df_tot_to_save - dataset containing COM as columns COM_x, COM_y, and COM_z
+    filename - the name of the output grid
     
     Returns:
     
@@ -955,7 +967,7 @@ def plot_graph_COM(df_ext,file_save = "",ligand = "",draw_round = False,water = 
 #######################################
 def Plot_COM(df_ext):
     """
-    
+    plotting average COM (x, y, and z separately) and the nu,mber of water molecules in the ligand solvation shell in each clusters
     Parameters:
     df_ext - IFP database with COM columns
     
@@ -996,13 +1008,18 @@ def Plot_COM(df_ext):
 
 
 
+########################################################################
+# depricated, will be removed in the next version
+########################################################################
+
 def Print_IFP_averaged(df_tot,resi_list_sorted,ligandsi,resi_name_list_sorted,properties=["AR","HD","HA","HY","WB","IP","IN"],threshold = 0.01):
     """
     generate a list of residues, combine all properties for each residue, sort them by the residue number
     
     Parameters:
-    
+        
     Returns:
+    IFP plot
     
     """
     index_no_zero_IFP = np.asarray([])
@@ -1065,11 +1082,17 @@ def Print_IFP_averaged(df_tot,resi_list_sorted,ligandsi,resi_name_list_sorted,pr
 ##################################
 def last_frames_by_contact(df_tot,columns_IFP,contacts):
     """
-    
+    functin that build an numpy array of the IFP properties extracting from the TFP dataset only the several last frame with a pre-defined number of the protein-ligand contacts 
     Parameters:
-    
+    contacts - number of contacts 
+    df_tot - complete dataset
+    columns_IFP - columns to be analized
     Returns:
-    
+    ar - numpy array containg IFP of the selected frames
+    r_t_f - list of selected replica-trajectory-frame  
+    df - IFP database from selected frames
+    np.asarray(com_tot) - just COM valsues
+    np.asarray(diss) - just trajectory length (column "length" from the original data set )
     """
     r_t_f = []
     com_tot = []
@@ -1096,14 +1119,13 @@ def last_frames_by_contact(df_tot,columns_IFP,contacts):
 #
 ##################################
 
-
 def bootstrapp(t):
     """
-    
+    function for getting approximate residence time for a sub-set of trajectories (for example from a selected channel)
     Parameters:
-    
+    t - set of trajectory length to be used for bootsrapping
     Returns:
-    
+    relative residence time
     """
     max_shuffle = 500
     alpha = 0.9

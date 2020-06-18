@@ -91,7 +91,60 @@ def rank_IFP_resi(df,ifp_type=['AR','HY','HA','HD','HL','IP','IN',"IO"]):
     columns_RE = np.asarray(columns_RE)[np.argsort(np.asarray(number))]
     return(columns_IFP,columns_RE)
 
+########################################################################
+# 
+########################################################################
 
+def remove_dissociated_parts(df_tot,max_rmsd=15,max_dcom=3,max_drmsd=3):
+    """    
+    this function checks if there is a jump in the ligand position in  two neighbour frames, which may appear due to incomplete wrapping system back to the box (i.e. because of the PBC),  
+    a part of the trajectory starting from the detected jump will be removed from the dataset
+    
+    Parameters:
+    df_tot - pkl table
+    columns_IFP - list of IFP types to be considered
+    max_rmsd - frames with RMSD below this threshold wil be analyzed
+    max_dcom - maximum distance between center of mass (COM) of the ligand from the first snapshot that will be considered as an indication of jump
+    max_drmsd - maximum distance between center of mass (RMSD) of the ligand from the first snapshot that will be considered as an indication of jump
+    Results:
+    df_new - new dataset
+    """
+    # remove trajectory part after dissociation
+    df_new= pd.DataFrame()
+    for l in np.unique(df_tot.ligand.values):
+        df_tot_lig = df_tot[df_tot.ligand == l]
+        for j in np.unique(df_tot_lig.Repl.values):
+            df_tot_Repl = df_tot_lig[df_tot_lig.Repl == j]
+            for i in np.unique(df_tot_Repl.Traj.values.astype(int)):
+                df_tot_Repl_Traj = df_tot_Repl[df_tot_Repl.Traj == str(i)]
+                s = np.sum(df_tot_Repl_Traj.values,axis=1)
+                rmsd = df_tot_Repl_Traj.RMSDl.values
+                comx = df_tot_Repl_Traj.COM_x.values
+                comy = df_tot_Repl_Traj.COM_y.values
+                comz = df_tot_Repl_Traj.COM_z.values
+                skip = -1
+                for r in range(1,rmsd.shape[0]):
+                    dcom = np.linalg.norm(np.asarray([float(comx[r-1]),float(comy[r-1]),float(comz[r-1])])-np.asarray([float(comx[r]),float(comy[r]),float(comz[r])]))
+                    drmsd = (rmsd[r]-rmsd[r-1]) 
+                    if  rmsd[r] < max_rmsd and (dcom > max_dcom or drmsd > max_drmsd):
+                        plt.plot(df_tot_Repl_Traj.time,df_tot_Repl_Traj.RMSDl)
+                        skip = r
+                        continue
+                if (np.argwhere(s == 0 ).flatten().shape[0] > 0) :
+                    mm = np.argwhere(s == 0 ).flatten()[0]
+                else: mm = -1
+                if  mm > 0 or skip > 0:
+                    if mm > 0 and skip > 0:   mmr = min(mm,r)
+                    elif mm > 0: mmr =mm
+                    else: mmr = skip
+                    df_new = df_new.append(df_tot_Repl_Traj[df_tot_Repl_Traj.time.astype(int) < mmr])
+                    plt.plot(df_tot_Repl_Traj.time,df_tot_Repl_Traj.RMSDl)
+                else:
+                    df_new = df_new.append(df_tot_Repl_Traj)
+    plt.xlabel("frame",fontsize=14)
+    plt.ylabel("ligand RMSD",fontsize=14)
+    plt.title("Trajectories with a ligand jump")
+    return(df_new)
 
 
 ########################################################################
@@ -316,7 +369,7 @@ def read_databases(d,name_template,name_len = 8):
     list_IFP = {}    
     new_list_col = []
     for i,lig_pkl in enumerate(glob.glob(d+name_template)):
-        name= lig_pkl[len(d):len(d)+8]
+        name= lig_pkl[len(d):len(d)+name_len]
         print(lig_pkl,name)
         list_IFP.update( {name:lig_pkl})
         df_lig= pd.read_pickle(lig_pkl)
@@ -589,8 +642,8 @@ def plot_graph_New(df_ext,file_save = "",ligand = "",draw_round = False,water = 
         plt.scatter(x=np.cos(alpha_regular),y=np.sin(alpha_regular), c='k',s=10)
         for l,p in zip(x_tick_lable,x_tick_pos):
             ax.annotate(str(l)+"A", (1.2*np.cos(0.9*2*3.14*p/max(x_tick_pos)),np.sin(0.9*2*3.14*p/max(x_tick_pos))),fontsize=14,color="gray")
-        plt.xlim(-1.3,1.3)
-        plt.ylim(-1.3,1.3)
+        plt.xlim=(-1.3,1.3)
+        plt.ylim=(-1.3,1.3)
     else:
         fig = plt.figure(figsize=(10, 6))
         gs = GS.GridSpec(1, 1) #, width_ratios=[1, 1]) 
@@ -599,6 +652,7 @@ def plot_graph_New(df_ext,file_save = "",ligand = "",draw_round = False,water = 
         ax.set_xlabel('<RMSD> /Angstrom', fontsize=18) 
         plt.xticks(x_tick_pos,x_tick_lable, fontsize=18)
         ax.tick_params(labelsize=18)
+        ax.set_ylim(-1,len(label_y)+1)
  #       plt.grid()
 
     
@@ -649,15 +703,14 @@ def plot_graph_New(df_ext,file_save = "",ligand = "",draw_round = False,water = 
                                 connectionstyle="arc3,rad=-0.5"),
                         )
 
-#    for i,txt in enumerate(labels_list):
-#            ax.annotate(txt, (label_x[txt],label_y[txt]+0.05*pow(i,0.5)),fontsize=18)
+    for i,txt in enumerate(labels_list):
+            ax.annotate(txt, (label_x[txt],label_y[txt]+0.05*pow(i,0.5)),fontsize=18)
     if water:         
         ax.scatter(label_x,label_y,facecolors='none',c=color_com,edgecolors="lightskyblue",s=500*np.asarray(label_size),cmap='Oranges',\
                linewidths=np.asarray(label_water))
         print("WATERS:",np.asarray(label_water))
     else:
         ax.scatter(label_x,label_y,facecolors='none',c=color_com,edgecolors="k",s=500*np.asarray(label_size),cmap='Oranges')
-        
     if file_save != "": plt.savefig(file_save,dpi=300)  
     else:    plt.show()
         
@@ -739,8 +792,8 @@ def plot_graph_COM(df_ext,file_save = "",ligand = "",draw_round = False,water = 
         dist_rmsd.append(np.round(np.abs(label_rmsd[i]-min_rmsd),2))
     dist_com = (10*np.asarray(label_com)/np.max(label_com)).astype(int)
     dist_rmsd = (10*np.asarray(dist_rmsd)/np.max(dist_rmsd)).astype(int)
-    print("COMs:",dist_com)
-    print("RMSDs:",dist_rmsd)
+    print("COM displacement in each cluster to be used for plotting:",dist_com)
+    print("RMSDs displacement in each cluster to be used for plotting:",dist_rmsd)
     print("COM min:",min_COM)
     print("RMSD min:",min_rmsd)
     #------------------------------------------------
@@ -794,7 +847,7 @@ def plot_graph_COM(df_ext,file_save = "",ligand = "",draw_round = False,water = 
 
     # since the last node is usually very far from all others we will damp it's color
     color_com[color_com == np.max(color_com)] = max(int(np.sort(color_com)[-2]+0.25*(np.sort(color_com)[-1]-np.sort(color_com)[-2] )),np.sort(color_com)[-1]-45) 
-    print("COLORS: ",color_com)
+    print("COLORS (i.e. averade RMSD) to be used in each cluster for plotting: ",color_com)
 
     # set logarythmic scale
     label_x = np.log10(label_x)
@@ -828,6 +881,7 @@ def plot_graph_COM(df_ext,file_save = "",ligand = "",draw_round = False,water = 
         ax.set_xlabel(r'< $\Delta{COM} $ > [Angstrom]', fontsize=18) 
         plt.xticks(x_tick_pos,x_tick_lable, fontsize=18)
         ax.tick_params(labelsize=18)
+        plt.ylim(-0.8,len(label_y)+0.8)
  #       plt.grid()
 
     
@@ -872,7 +926,7 @@ def plot_graph_COM(df_ext,file_save = "",ligand = "",draw_round = False,water = 
             xytext=(label_x[a],label_y[a])   
             ax.annotate("", xy=xy, xycoords='data',
                         xytext=xytext, textcoords='data',
-                        size=np.abs(flow)*5000,
+                        size=np.abs(flow)*8000,
                         arrowprops=dict(arrowstyle="Fancy,head_length=0.2, head_width=0.4, tail_width=0.2", 
                                 fc="0.6", ec="none", alpha=0.8 ,
                                 connectionstyle="arc3,rad=-0.5"),

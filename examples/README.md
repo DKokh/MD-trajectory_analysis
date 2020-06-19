@@ -20,10 +20,12 @@ Schloss-Wolfsbrunnenweg 35
 
 #########################
 
-## 1. IFP.py ##
-generation of the Interaction Fingerprint table from a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations
+## 1. Generation of the Interaction Fingerprint table from a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations##
 
 1. Prerequisite:
+    - Python 3.X and a set of python libraries
+        Alteratively, one can configure environment in anaconda using: conda env create -f IFP_trajectory.yml
+    - IFP.py 
     - Scripts directory containing Scripts/IFP_generation.py and Scripts/Trajectories.py 
     
     - Input data required:

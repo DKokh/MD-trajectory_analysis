@@ -19,8 +19,17 @@
 
 3. Output:
     
+#-----------------------------------------------------------------
 
+    tr = trajectories(DIR_all,namd_tmpl= trj, ramd_tmpl= DIR_all,ligand_pdb=ligand_pdb,pdb = ref_pdb,\
+                          ligand_mol2=ligand_mol2,namd_traj_tmpl = "*nc",ramd_traj_tmpl = "xx")
+                          
+    tr.sub_system = " protein or (resname SOL HOH WAT G G3 G5 U5 C C3 MN) "
 
+    tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)
 
+    IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
+
+#--------------------------------------------------------------------
 
 

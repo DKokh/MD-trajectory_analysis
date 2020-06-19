@@ -79,17 +79,19 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
      __________________________________
      
      (iv) IFP generation           
-            - for equilibration trajectories: 
+       (a) for equilibration trajectories: 
+              One can define whether water bridges and contact with lipd must be computed
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  
         IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
      _________________________________
-            - for equilibration trajectories:
+     
+      (b) for RAMD trajectories first relative residence times are computed:
      __________________________________   
 
         tr.ramd.scan_ramd()
-        tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)
+        tr.analysis_all_ramd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)
         IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
         
     ___________________________________

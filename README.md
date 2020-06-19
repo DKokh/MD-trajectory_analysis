@@ -2,7 +2,7 @@
 ## A Python Workflow for the Generation and Analysis of Protein-Ligand Interaction Fingerprints from Molecular Dynamics trajectories
 ## v.1.0
 ### 19.06.2020  
-## The repository is transferred and will be further maintained at https://github.com/HITS-MCM/MD-IFP/ 
+## The repository was transferred to https://github.com/HITS-MCM/MD-IFP/ and will be further maintained their
 
 __Authors and Contributors:__
 

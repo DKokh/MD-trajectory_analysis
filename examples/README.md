@@ -1,4 +1,4 @@
-#  This is a collection example recipes of how to carry out particular tasks using MD-IFP scripts
+#  This is a collection of example recipes showing how to carry out particular tasks using MD-IFP scripts
 
 
 ##  Generation of the Interaction Fingerprint table for a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations (IFP.py)
@@ -53,16 +53,15 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
     __________________________________
     
         DIR_all = "my_ligand/"
-        eq = "my_equilibration"
-        ramd = "my_RAMD"
-        eq_tr =
-        ramd_tr = 
+        eq = "my_equilibration/my_replic*"
+        ramd = "my_RAMD/my_replic*"
+        eq_tr ="my_trajec*/*.dcd"
+        ramd_tr = "my_trajec*/*.dcd"
      __________________________________
      
-     Note, that reference pdb file fo a system  and pdb/mol2 for a ligand are obligatory
-     
+     Note, that reference pdb file fo a system  and pdb/mol2 for a ligand are obligatory, while equilibration or ramd trajectory may be absent 
    
-    (ii) Trajectory object is generated
+    (ii) Trajectory object is generated, which contains all information of equilibration and RAMD trajectories. Additionally, ligand structure and chemical properties will be analized
     
      __________________________________
      
@@ -70,24 +69,23 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
                           ligand_mol2=lig_mol2,namd_traj_tmpl = eq_tr,ramd_traj_tmpl = tamd_tr)                   
       __________________________________
       
-     (iii) Defenition of a sub-system 
-     
+     (iii) Defenition of a sub-system to be analyzed 
+        several possibilities are given below. Ligand will be added automatically; by default only protein and ligand will be considered
      __________________________________
                                
-        tr.sub_system = " protein or (resname SOL HOH WAT G G3 G5 U5 C C3 MN) "
+        tr.sub_system = " protein  "                                              # only protein and ligand - default set
+        tr.sub_system = " protein or (resname SOL HOH WAT G G3 G5 U5 C C3 MN)  "  # protein, ligand, solvent, RNA residues, and Mn ion
+        tr.sub_system = " protein or (resname SOL HOH WAT )  "                    # protein, ligand, solvent, 
      __________________________________
      
-     (iv) IFP generation for equilibration trajectories:
-     
+     (iv) IFP generation           
+            - for equilibration trajectories: 
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  
         IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
      _________________________________
-    
-     
-     (v) IFP generation for RAMD trajectories
-     
+            - for equilibration trajectories:
      __________________________________   
 
         tr.ramd.scan_ramd()

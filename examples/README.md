@@ -1,8 +1,7 @@
 #  This is a collection example recipes of how to carry out particular tasks using MD-IFP scripts
 
-#########################
 
-##  Generation of the Interaction Fingerprint table from a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations (IFP.py)
+##  Generation of the Interaction Fingerprint table for a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations (IFP.py)
 Most steps included in the present examples are also demonstrated in the JN IFP_generation_examples_TRAJ.ipynb
 However, to analyze a large set of trajectories a simple python script is usually more useful.
 
@@ -10,8 +9,7 @@ This example provide a template script that, after small adjastment, can be used
     (i) a single MD trajectory 
     (ii) a set of MD trajectories.
     (iii) a set of Equilibration MD trajectories and dissociation RAMD trajectries
-    
-
+All steps are also included in IFP.py, that can be adjasted for a particualr task
 
 1. Prerequisite:
     - Python 3.X and a set of python libraries
@@ -60,6 +58,9 @@ This example provide a template script that, after small adjastment, can be used
         eq_tr =
         ramd_tr = 
      __________________________________
+     
+     Note, that reference pdb file fo a system  and pdb/mol2 for a ligand are obligatory
+     
    
     (ii) Trajectory object is generated
     
@@ -69,26 +70,28 @@ This example provide a template script that, after small adjastment, can be used
                           ligand_mol2=lig_mol2,namd_traj_tmpl = eq_tr,ramd_traj_tmpl = tamd_tr)                   
       __________________________________
       
-     (iii) Sub-system is defined
+     (iii) Defenition of a sub-system 
      
      __________________________________
                                
         tr.sub_system = " protein or (resname SOL HOH WAT G G3 G5 U5 C C3 MN) "
      __________________________________
      
-     (iv) IFP generated
+     (iv) IFP generation for equilibration trajectories:
      
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  
+        IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
      _________________________________
     
      
-     (iv) IFP stored as a table
+     (v) IFP generation for RAMD trajectories
      
-     __________________________________
-     
+     __________________________________   
 
+        tr.ramd.scan_ramd()
+        tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)
         IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
         
     ___________________________________

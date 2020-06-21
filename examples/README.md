@@ -28,13 +28,14 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
 3. **Procedure (all steps are also combined in the IFP.py script that can be adapted for a particular task )**
  
     (i) _working directory and template of trajectory names that will be searched and added to the object are defined._
+    
         for example, simulated equilibration and dissociation trajectories can be stored as follows:
-        for equilibration:
+        >>for equilibration:
         
         my_ligand/my_equilibration/my_replica1/md1.dcd
         my_ligand/my_equilibration/my_replica2/md2.dcd
         
-        for dissociation:
+        >>for dissociation:
         
         my_ligand/my_RAMD/my_replica1/my_trajectory1/md1.dcd
         my_ligand/my_RAMD/my_replica1/my_trajectory2/md2.dcd
@@ -42,11 +43,11 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         my_ligand/my_RAMD/my_replica2/my_trajectory1/md1.dcd
         my_ligand/my_RAMD/my_replica2/my_trajectory2/md2.dcd
         
-        reference pdb file for teh system: 
+        >>reference pdb file for the system: 
         
         my_ligand/topology/my_ref.pdb
         
-        mol2 and pdb files for the ligand:
+        >>mol2 and pdb files for the ligand:
 
         my_ligand/topology/my_ligand.pdb
         my_ligand/topology/my_ligand.mol2
@@ -76,10 +77,11 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
       __________________________________
       
      (iii) _Defenition of a sub-system to be analyzed_ 
-        several possibilities are shown below. 
-        Ligand will be added automatically to any chosen sub-system; 
-        by default only protein will be considered as a sub-system 
-        Inclusion water makes simulations notably (at least several times) slower
+     
+  several possibilities are shown below. 
+  Ligand will be added automatically to any chosen sub-system; 
+  by default only protein will be considered as a sub-system 
+  Inclusion water makes simulations notably (at least several times) slower
      __________________________________
                                
         tr.sub_system = " protein  "                                              # only protein and ligand - default set
@@ -87,8 +89,9 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         tr.sub_system = " protein or (resname SOL HOH WAT )  "                    # protein, ligand, solvent, 
      __________________________________
      
-     (iv) _IFP generation_           
-       (a) _for equilibration trajectories:_ 
+   (iv) _IFP generation_ 
+   
+   (a) _for equilibration trajectories:_ 
         - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
           For computation of water bridges  water must be included in the sub-system in the previous step
         - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
@@ -101,9 +104,9 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         IFP_table = tr.namd.IFP_save(file_name)
       _________________________________
      
-      (b) _for RAMD trajectories_
-            first relative residence times are computed:
-            parameters are the same as for the IFP generation for equilibration trajectorues
+   (b) _for RAMD trajectories_
+      - first relative residence times are computed:
+      - parameters are the same as for the IFP generation for equilibration trajectorues
      __________________________________   
 
         tr.ramd.scan_ramd()

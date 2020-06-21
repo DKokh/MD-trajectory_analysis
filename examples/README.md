@@ -78,10 +78,10 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
       
      (iii) _Defenition of a sub-system to be analyzed_ 
      
-     several possibilities are shown below. 
-     Ligand will be added automatically to any chosen sub-system; 
-     by default only protein will be considered as a sub-system 
-     Inclusion water makes simulations notably (at least several times) slower
+      - several possibilities are demonstrated below. 
+      - Ligand will be added automatically to any chosen sub-system; 
+      - by default only protein will be considered as a sub-system this makes simulations fast, but computations of water bridges will be not possible
+      - Inclusion water makes simulations notably (at least several times) slower
      __________________________________
                                
         tr.sub_system = " protein  "                                              # only protein and ligand - default set
@@ -92,13 +92,16 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
    (iv) _IFP generation_ 
    
    (a) _for equilibration trajectories:_ 
-        - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
-          For computation of water bridges  water must be included in the sub-system in the previous step
-        - number of contacts with lipids can be computed - lipid residue names are defined as a list, 
+      - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
+        For computation of water bridges  water must be included in the sub-system in the previous step
+      - number of contacts with lipids can be computed - lipid residue names are defined as a list, 
         for example: Lipids = ["PC","CHL","PA"]
-        - fiest frame and stride are defined by the parameters step_analysis and start_analysis
-          Saving results  in a data frame file (pkl)         
-        - as an input parameter file name should be given  
+      - fiest frame and stride are defined by the parameters step_analysis and start_analysis
+        Saving results  in a data frame file (pkl)         
+      - as an input parameter file name should be given 
+      - results will be stored in a set of pandas DataFrames - individual frame for each trajectory-  tr.namd.traj.df_properties
+      - a complete IFP table can be stored as a pkl file using tr.namd.IFP_save() function with a single parameter- file name
+        this  function will return a complete pandas DataFrame including all trajectories
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  
@@ -106,8 +109,9 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
       _________________________________
      
    (b) _for RAMD trajectories_
-      - first relative residence times are computed:
-      - parameters are the same as for the IFP generation for equilibration trajectorues
+      - first relative residence times must be computed using the scan_ramd() function
+      - then IFPs computed using the function , similar to that described above for equilibration trajectory
+        parameters are the same as for the IFP generation for equilibration trajectories
      __________________________________   
 
         tr.ramd.scan_ramd()

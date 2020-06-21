@@ -6,10 +6,8 @@ Most steps included in the present examples are also demonstrated in the JN IFP_
 However, to analyze a large set of trajectories a simple python script is usually more useful.
 
 This example provide a template script that, after small adjastment, can be used to generate IFPs for: 
-- a single MD trajectory 
-    
-- a set of MD trajectories.
-    
+- a single MD trajectory    
+- a set of MD trajectories. 
 - a set of Equilibration MD trajectories and dissociation RAMD trajectries
     
     
@@ -88,12 +86,12 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
      
      (iv) IFP generation           
        (a) for equilibration trajectories: 
-             - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
-               For computation of water bridges  water must be included in the sub-system in the previous step
-             - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
-             - fiest frame and stride are defined by the parameters step_analysis and start_analysis
+        - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
+          For computation of water bridges  water must be included in the sub-system in the previous step
+        - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
+        - fiest frame and stride are defined by the parameters step_analysis and start_analysis
           Saving results  in a data frame file (pkl)         
-            - as an input parameter file name should be given  
+        - as an input parameter file name should be given  
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  

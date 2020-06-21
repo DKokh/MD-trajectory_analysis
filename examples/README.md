@@ -1,7 +1,7 @@
 #  This is a collection of example recipes showing how to carry out particular tasks using MD-IFP scripts
 
 
-##  Generation of the Interaction Fingerprint table for a set of MD trajectories obtained either from  the standard MD simulations or RAMD simulations (IFP.py)
+##  Generation of the Interaction Fingerprint table for a set of MD trajectories obtained either from standard MD simulations or RAMD simulations
 Most steps included in the present examples are also demonstrated in the JN IFP_generation_examples_TRAJ.ipynb
 However, to analyze a large set of trajectories a simple python script is usually more useful.
 

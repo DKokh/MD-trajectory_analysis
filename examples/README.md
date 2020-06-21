@@ -78,10 +78,10 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
       
      (iii) _Defenition of a sub-system to be analyzed_ 
      
-  several possibilities are shown below. 
-  Ligand will be added automatically to any chosen sub-system; 
-  by default only protein will be considered as a sub-system 
-  Inclusion water makes simulations notably (at least several times) slower
+     several possibilities are shown below. 
+     Ligand will be added automatically to any chosen sub-system; 
+     by default only protein will be considered as a sub-system 
+     Inclusion water makes simulations notably (at least several times) slower
      __________________________________
                                
         tr.sub_system = " protein  "                                              # only protein and ligand - default set
@@ -94,7 +94,8 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
    (a) _for equilibration trajectories:_ 
         - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
           For computation of water bridges  water must be included in the sub-system in the previous step
-        - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
+        - number of contacts with lipids can be computed - lipid residue names are defined as a list, 
+        for example: Lipids = ["PC","CHL","PA"]
         - fiest frame and stride are defined by the parameters step_analysis and start_analysis
           Saving results  in a data frame file (pkl)         
         - as an input parameter file name should be given  

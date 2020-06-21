@@ -9,6 +9,8 @@ This example provide a template script that, after small adjastment, can be used
     - a single MD trajectory 
     - a set of MD trajectories.
     - a set of Equilibration MD trajectories and dissociation RAMD trajectries
+    
+    
 All steps are also included in IFP.py, that can be adjasted for a particualr task
 
 1. Prerequisite:
@@ -59,7 +61,7 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         ramd_tr = "my_trajec*/*.dcd"
      __________________________________
      
-     Note, that reference pdb file fo a system  and pdb/mol2 for a ligand are obligatory, while equilibration or ramd trajectory may be absent 
+     Note, that the reference pdb file for a complete system  and pdb/mol2 for a ligand are obligatory, while equilibration or RAMD trajectory can be omitted
    
     (ii) Trajectory object is generated, which contains all information of equilibration and RAMD trajectories. Additionally, ligand structure and chemical properties will be analized
     
@@ -70,7 +72,10 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
       __________________________________
       
      (iii) Defenition of a sub-system to be analyzed 
-        several possibilities are given below. Ligand will be added automatically; by default only protein and ligand will be considered
+        several possibilities are shown below. 
+        Ligand will be added automatically to any chosen sub-system; 
+        by default only protein will be considered as a sub-system 
+        Inclusion water makes simulations notably (at least several times) slower
      __________________________________
                                
         tr.sub_system = " protein  "                                              # only protein and ligand - default set
@@ -80,22 +85,24 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
      
      (iv) IFP generation           
        (a) for equilibration trajectories: 
-              One can define whether water bridges and contact with lipd must be computed
+             - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
+               For computation of water bridges  water must be included in the sub-system in the previous step
+             - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
+             - fiest frame and stride are defined by the parameters step_analysis and start_analysis
+          Saving results  in a data frame file (pkl)         
+            - as an input parameter file name should be given  
      __________________________________
      
         tr.analysis_all_namd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)  
-        IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
-     _________________________________
+        IFP_table = tr.namd.IFP_save(file_name)
+      _________________________________
      
       (b) for RAMD trajectories first relative residence times are computed:
+            parameters are the same 
      __________________________________   
 
         tr.ramd.scan_ramd()
         tr.analysis_all_ramd(WB_analysis = False, Lipids = [],auxi_selection = [],step_analysis=step, start_analysis=start)
-        IFP_table = tr.namd.IFP_save(DIR_all+ligand_name+"-IFP_3000.pkl")
+        IFP_table = tr.namd.IFP_save(file_name)
         
-    ___________________________________
-
-
-
-
+ 

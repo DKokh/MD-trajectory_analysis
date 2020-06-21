@@ -6,9 +6,9 @@ Most steps included in the present examples are also demonstrated in the JN IFP_
 However, to analyze a large set of trajectories a simple python script is usually more useful.
 
 This example provide a template script that, after small adjastment, can be used to generate IFPs for 
-    (i) a single MD trajectory 
-    (ii) a set of MD trajectories.
-    (iii) a set of Equilibration MD trajectories and dissociation RAMD trajectries
+    - a single MD trajectory 
+    - a set of MD trajectories.
+    - a set of Equilibration MD trajectories and dissociation RAMD trajectries
 All steps are also included in IFP.py, that can be adjasted for a particualr task
 
 1. Prerequisite:

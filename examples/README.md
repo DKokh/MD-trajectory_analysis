@@ -19,7 +19,7 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         Alteratively, one can configure environment in anaconda using: conda env create -f IFP_trajectory.yml
     - Scripts directory containing Scripts/IFP_generation.py and Scripts/Trajectories.py 
     
-2.** Input data required:**
+2. **Input data required:**
     - trajectory file (possible formats: nc,dcd, xtc, trr )
     - pdb file of the system (for example, generated from the first frame)
     - ligand pdb file
@@ -75,7 +75,7 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
                           ligand_mol2=lig_mol2,namd_traj_tmpl = eq_tr,ramd_traj_tmpl = tamd_tr)                   
       __________________________________
       
-     (iii) Defenition of a sub-system to be analyzed 
+     (iii) _Defenition of a sub-system to be analyzed_ 
         several possibilities are shown below. 
         Ligand will be added automatically to any chosen sub-system; 
         by default only protein will be considered as a sub-system 
@@ -87,8 +87,8 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         tr.sub_system = " protein or (resname SOL HOH WAT )  "                    # protein, ligand, solvent, 
      __________________________________
      
-     (iv) IFP generation           
-       (a) for equilibration trajectories: 
+     (iv) _IFP generation_           
+       (a) _for equilibration trajectories:_ 
         - One can define if water bridges must be computed (WB_analysis = True/False, default-False). 
           For computation of water bridges  water must be included in the sub-system in the previous step
         - Contact with lipd can be computed - lipid residue names are defined as a list, for example: Lipids = ["PC","CHL","PA"]
@@ -101,8 +101,9 @@ All steps are also included in IFP.py, that can be adjasted for a particualr tas
         IFP_table = tr.namd.IFP_save(file_name)
       _________________________________
      
-      (b) for RAMD trajectories first relative residence times are computed:
-            parameters are the same 
+      (b) _for RAMD trajectories_
+            first relative residence times are computed:
+            parameters are the same as for the IFP generation for equilibration trajectorues
      __________________________________   
 
         tr.ramd.scan_ramd()

@@ -17,7 +17,7 @@
 ### v 1.0
 #
 #    Copyright (c) 2020
-#    Released under the GNU Public Licence, v2 or any higher version
+#    Released under the EUPL Licence, v1.2 or any higher version
 #    
 ### Author: Daria Kokh
 #    Daria.Kokh@h-its.org
@@ -105,23 +105,24 @@ def pbc(u,Rgr0):
 
 class Membrane_properties:
     
-    def __init__(self,ref_pdb,sel_ligands = "",interval=(0,-1,1),d=3,dh = 3,sel_m = ["CHL", "PC", "PA", "PE"]):     
+    def __init__(self,ref_pdb,sel_ligands = "",interval=(0,-1,1),d=3,dh = 3,sel_m = ["CHL", "PC", "PA", "PE", "OL"]):     
         """
         PARAMETERS:
         ref - file with a reference pdb structure
-        sel_ligands - ligand residue name (or several names space-separated) to be treated together with tproteion residues
+        sel_ligands - ligand residue name (or several names space-separated) to be treated together with proteion residues
         interval - array containing the first and the last frame, and a stride to be used for analysis
-        dz - interval for splitting simulation box (the same in all directions, in Angstrom)
         sel_m - a string defining selection of the residues for membrane analysis. 
             Note, that in AMBER ff PC/PE + PA + OL - are different residues representing one lipid molecules
             particularly, OL and PA are two chains of POPC or POPE lipid that are placed in the same z - interval
             PC or PE are on the top of the lipid and practically do not overlap with PA/OL
             Thus, OL should be omitted to avouid double counting of lipid residues
-        d=6 Angstrom over x/y and dh = 3 Angstrom over z 
+        d= interval for splitting simulation box (the same in x/y directions, in Angstrom);  3 Angstrom default
+        dh = 3 Angstrom over z
+        
         Important: 
-            - there is no overaging over z, so the best selection for dh is a vdW distance
-            - for large x/y steps (dh > 3 A)  the area in x/y plane occupied by ligand/protein will be overestimated
-                and atom density will be underestimated because the unit sell is assuming to be completely ocupied by a single atom 
+            - there is no averaging over z, so the best selection for dh is a vdW distance
+            - for large x/y steps (d > 3 A)  the area in x/y plane occupied by ligand/protein will be overestimated
+                and the atom density will be underestimated because the unit cell is assuming to be completely ocupied by a single atom 
        """
         # input parameters
         self.ref_pdb = ref_pdb
@@ -137,7 +138,7 @@ class Membrane_properties:
             self.sel_m_a = self.sel_m_a + " " + s 
         self.sel_m = self.sel_m +" )"
         self.sel_m_a = self.sel_m_a +" )"
-        self.margin = max(2,int(4.0/d)+1)  # additional margin used for each side of the box in the case if box size increases along the trajectory
+        self.margin = max(2,int(4.0/d)+1)  # additional margin used, it is added to each side of the box in the case if box size increases along the trajectory
         
         # per-frame data:
             # arrays of numpy 3D matrices: [frame][z, x, y] 
@@ -148,6 +149,7 @@ class Membrane_properties:
         self.prot_area = []
         self.mem_area = []
         self.wat_area = []
+        self.tot_area = []
         self.resid_array = []
         self.dens_p = []
         self.dens_w = []
@@ -166,7 +168,7 @@ class Membrane_properties:
         self.mem_slab_frame_zx = []
         self.area_x = []
         
-        # position of the membrain in the box;  used for plotting
+        # position of the membrane in the box;  used for plotting
         self.start_mem = None
         self.stop_mem = None
         self.step_mem = None
@@ -193,13 +195,14 @@ class Membrane_properties:
             prot_slab - the number of protein atom 
             wat_slab - the number of water atom 
         2.  arrays of the shape [frame][z] containing
-            prot_area  -area occupied by protein atoms
-            mem_area   -area occupied by membrane atoms
-            wat_area   -area occupied by water atoms
+            prot_area  -area occupied by protein atoms - [frames][nz]
+            mem_area   -area occupied by membrane atoms - [frames][nz] (as defined by the parameter sel_m_a)
+            wat_area   -area occupied by water atoms - [frames][nz]
+            tot_area   -area occupied by all atoms (for checking)- [frames][nz]
         3.  array of the shape [frame][z] containing
-            resid_array - number of lipid resudues (as defined by the parameter sel_m)
+            resid_array - number of lipid residues (as defined by the parameter sel_m)
         4.  array of the shape [frame][z][x] containing
-            resid_array_zx - - number of lipid resudues (as defined by the parameter sel_m)
+            resid_array_zx - - number of lipid residues (as defined by the parameter sel_m)
             for each z,x slab
         Rgr - vector [frame] containing protein radius of gyration for each frame
         """
@@ -213,15 +216,15 @@ class Membrane_properties:
         u_length = len(u.trajectory)
         u_size = int(os.path.getsize(traj)/(1024.*1024.))    
         # box parameters
-        self.nz = int(u.dimensions[2]/self.dh)+1+self.margin
+        self.nz = int(u.dimensions[2]/self.dh)+self.margin
         self.nx = int(u.dimensions[0]/self.dz)+self.margin
         self.ny = int(u.dimensions[1]/self.dz)+self.margin
-        print("DIM (from traj): ",u.dimensions)
-        print("DIM (x/y/z): ",self.nx,self.ny,self.nz)
+        print("DIM (from traj, in Angstrom): ",u.dimensions)
+        print("DIM (x/y/z, number of grid points): ",self.nx,self.ny,self.nz)
         
         u_mem = u  # can be replaced by a procedure of loading trajectory in RAM
         u_mem_length = u_length
-        start_analysis = nx = self.interval[0] 
+        start_analysis = self.interval[0] 
         stop_analysis = self.interval[1] 
         step_analysis = self.interval[2] 
         if(stop_analysis < 0): stop_analysis = u_mem_length
@@ -245,9 +248,10 @@ class Membrane_properties:
             sel_p = "(not type H) and  protein" 
     
         self.Rgr = []
+        # loop over frames
         for i0,i in enumerate(range(start_analysis,stop_analysis,step_analysis)):
             if (i0%10 == 0):
-                print("frames analized: ",i0," current frame: ",i)
+                print("frames analyzed: ",i0," current frame: ",i)
             u_mem.trajectory[i]
             self.Rgr.append(pbc(u_mem,Rgr0))
             u_mem_sel_m = u_mem.select_atoms(sel_m)
@@ -255,6 +259,7 @@ class Membrane_properties:
             u_mem_sel_p = u_mem.select_atoms(sel_p)            
             u_mem_sel_w = u_mem.select_atoms(sel_w)                    
             
+            # count membrane atoms in each xy slab 
             mem_slab0 = np.zeros((nz,nx,ny),dtype = int)
             resid_list = []
             resid_list_zx = []
@@ -262,8 +267,10 @@ class Membrane_properties:
                 resid_list.append([])
                 resid_list_zx.append([])
                 for t in range(0,nx): resid_list_zx[-1].append([])
+# first we will consider the case when each lipid is splitted into several different residues
+# in this case sel_m_a - selection of all lipid residues, while  sel_m - selection of only lipid header (i.e. one resideu per lipid)
             if(sel_m_a != sel_m):
-                for at,t in zip(u_mem_sel_m.positions,u_mem_sel_m):
+                for at,t in zip(u_mem_sel_m_a.positions,u_mem_sel_m_a):
                     n = t.resid
                     ix = (int)(at[0]/self.dz)
                     iy =  (int)(at[1]/self.dz)
@@ -272,7 +279,7 @@ class Membrane_properties:
                         mem_slab0[iz,ix,iy] += 1
                     except:
                         print("Membrane is out of the box ",at," ",nx,ny,nz," ",ix,iy,iz)
-                for at,t in zip(u_mem_sel_m_a.positions,u_mem_sel_m_a):
+                for at,t in zip(u_mem_sel_m.positions,u_mem_sel_m):
                     n = t.resid
                     ix = (int)(at[0]/self.dz)
                     iy =  (int)(at[1]/self.dz)
@@ -303,7 +310,8 @@ class Membrane_properties:
                     iy =  (int)(at[1]/self.dz)
                     iz = (int)(at[2]/self.dh)
                     try:
-                        prot_slab1[iz,ix,iy] += 1
+                        if mem_slab0[iz,ix,iy] == 0:
+                            prot_slab1[iz,ix,iy] += 1
                     except:
                         print("Protein is out of the box ",at," ",nx,ny,nz," ",ix,iy,iz)
                         
@@ -313,11 +321,13 @@ class Membrane_properties:
                     iy = (int)(at[1]/self.dz)
                     iz = (int)(at[2]/self.dh)
                     try:
-                        wat_slab2[iz,ix,iy] = 1
+                        if prot_slab1[iz,ix,iy] == 0 and mem_slab0[iz,ix,iy] == 0:
+                            wat_slab2[iz,ix,iy] = 1
                     except:
-                        if iz < nz:  # wather at box boundary is not important, just skip it
+                        if iz < nz:  # water at box boundary is not important, just skip it
                             print("Water is out of the box ",at," ",nx,ny,nz," ",ix,iy,iz)
                         
+            tot_area1 = np.zeros((nz),dtype = int)
             mem_area1 = np.zeros((nz),dtype = int)
             prot_area1 = np.zeros((nz),dtype = int)
             resid_array0 = np.zeros((nz),dtype = int)
@@ -325,17 +335,14 @@ class Membrane_properties:
             wat_area1 = np.zeros((nz),dtype = int)
             #---- ToDo - computing of the area can be done more accurately by taking into account just the area occupied by a single atom
             for iz in range(0,nz): 
-                """
-                prot_area1[iz] =  np.sum(prot_slab1[iz]) *4.0
-                mem_area1[iz] =  np.sum(mem_slab0[iz]) *4.0
-                wat_area1[iz] =  np.sum(wat_slab2[iz]) *4.0
-                """
                 prot_area1[iz] = np.count_nonzero(prot_slab1[iz])*self.dz*self.dz
                 mem_area1[iz] = np.count_nonzero(mem_slab0[iz])*self.dz*self.dz
                 wat_area1[iz] = np.count_nonzero(wat_slab2[iz])*self.dz*self.dz
+                tot_area1[iz] = prot_area1[iz]+mem_area1[iz]+wat_area1[iz]
                 resid_array0[iz] = len(resid_list[iz])
                 for ix in range(0,nx):
                     resid_array_zx0[iz][ix] = len(resid_list_zx[iz][ix])
+            self.tot_area.append(tot_area1)
             self.wat_area.append(wat_area1)
             self.mem_area.append(mem_area1)
             self.prot_area.append(prot_area1)
@@ -350,7 +357,7 @@ class Membrane_properties:
    
     ##################################################
     #
-    # Averagion membrane properties over all frames and
+    # Average membrane properties over all frames and
     # Preparation of data for plotting
     #
     ##################################################
@@ -361,7 +368,7 @@ class Membrane_properties:
         Results:
             dens_p - density of  protein (and ligand) atoms
             dens_m - density of  membrane atoms
-            m_r_per_area - membrane residues per squered Angstrom
+            m_r_per_area - membrane residues per squared Angstrom
             
             mem_slab_frame - [z][x,y] x/y distribution of membrane atoms for a set of z slabs
             prot_slab_frame - [z][x,y] x/y distribution of protein atoms for a set of z slabs
@@ -453,7 +460,7 @@ class Membrane_properties:
         """
         PARAMETERS:
         dens_p,dens_m - density of the protein and membrane atoms, respectively, as a function of z
-        m_r_per_area - membrane residues per squered Angstrom  as a function of z
+        m_r_per_area - membrane residues per squared Angstrom  as a function of z
         prot_area, mem_area,wat_area - area occupied by atoms of protein, membrane, and water, respectively, as a function of z
 
         """
@@ -464,6 +471,7 @@ class Membrane_properties:
         prot_area = self.prot_area
         mem_area = self.mem_area
         wat_area = self.wat_area
+        tot_area = self.tot_area
     
         X = self.dh*np.asarray(range(0,len(dens_p[0])))            
         fig = plt.figure(figsize=(12, 6),dpi=150)
@@ -475,10 +483,10 @@ class Membrane_properties:
         plt.errorbar(x=X,y=np.mean(np.asarray(dens_m),axis=0), yerr= np.std(np.asarray(dens_m),axis=0), color = "gray" , fmt='o--', markersize=1 )
         plt.scatter(x=X,y=np.mean(np.asarray(dens_m),axis=0),color = 'green',alpha=0.5,s=50, label="membr.")
 
-        ax2.legend(framealpha = 0.0,edgecolor ='None',loc='best')
-        ax2.set_ylabel('[atoms/A^2]', fontsize=14)
-        ax2.set_xlabel('z-distance', fontsize=14)
-        ax2.set_title('Density ')
+        ax2.legend(framealpha = 0.0,edgecolor ='None',loc='upper top', fontsize=12)
+        ax2.set_ylabel('[atoms/A^2]', fontsize=12)
+        ax2.set_xlabel('z-distance [Angstrom]', fontsize=12)
+        ax2.set_title('Density ', fontsize=12)
         ax2.grid(color='gray', linestyle='-', linewidth=0.2)
 
         ax4 = plt.subplot(gs[1])
@@ -487,34 +495,37 @@ class Membrane_properties:
         plt.scatter(x=X,y=np.mean(np.asarray(m_r_per_area),axis=0),color = 'green',alpha=0.5,s=50, label="membr.")
         ysmoothed = gaussian_filter1d(np.mean(np.asarray(m_r_per_area),axis=0), sigma=1)
         plt.plot(X,ysmoothed,color = "green" , lw = 1)
-        ax4.set_ylim(0,max(np.mean(np.asarray(m_r_per_area),axis=0)))
-        ax4.legend(framealpha = 0.0,edgecolor ='None',loc='best')
-        ax4.set_ylabel('area [A^2]', fontsize=14)
-        ax4.set_xlabel('z-distance', fontsize=14)
-        ax4.set_title('Area per lipid')
+        ax4.set_ylim(0,5+max(np.mean(np.asarray(m_r_per_area),axis=0)))
+        ax4.legend(framealpha = 0.0,edgecolor ='None',loc='best', fontsize=12)
+        ax4.set_ylabel('area [A^2]', fontsize=12)
+        ax4.set_xlabel('z-distance [Angstrom]', fontsize=12)
+        ax4.set_title('Area per lipid', fontsize=12)
         ax4.grid(color='gray', linestyle='-', linewidth=0.2)
 
         ax3 = plt.subplot(gs[2])
-        plt.errorbar(x=X,y=np.mean(np.asarray(prot_area),axis=0),             yerr= np.std(np.asarray(prot_area),axis=0), color = "gray" , fmt='o--', markersize=1)
+        plt.errorbar(x=X,y=np.mean(np.asarray(prot_area),axis=0), yerr= np.std(np.asarray(prot_area),axis=0), color = "gray" , fmt='o--', markersize=1)
         plt.scatter(x=X,y=np.mean(np.asarray(prot_area),axis=0),color = 'red',alpha=0.5,s=50, label="protein")
 
-        plt.errorbar(x=X,y=np.mean(np.asarray(mem_area),axis=0),             yerr= np.std(np.asarray(mem_area),axis=0), color = "gray" , fmt='o--', markersize=1 )
+        plt.errorbar(x=X,y=np.mean(np.asarray(mem_area),axis=0), yerr= np.std(np.asarray(mem_area),axis=0), color = "gray" , fmt='o--', markersize=1 )
         plt.scatter(x=X,y=np.mean(np.asarray(mem_area),axis=0),color = 'green',alpha=0.5,s=50, label="membr. ")
 
-        plt.errorbar(x=X,y=np.mean(np.asarray(wat_area),axis=0),             yerr= np.std(np.asarray(wat_area),axis=0), color = "gray" , fmt='o--', markersize=1 )
+        plt.errorbar(x=X,y=np.mean(np.asarray(wat_area),axis=0), yerr= np.std(np.asarray(wat_area),axis=0), color = "gray" , fmt='o--', markersize=1 )
         plt.scatter(x=X,y=np.mean(np.asarray(wat_area),axis=0),color = 'blue',alpha=0.5,s=50, label="water ")
+        
+        plt.errorbar(x=X,y=np.mean(np.asarray(tot_area),axis=0),  yerr= np.std(np.asarray(tot_area),axis=0), color = "gray" , fmt='--', markersize=0.5 )
+        plt.scatter(x=X,y=np.mean(np.asarray(tot_area),axis=0),color = 'k',alpha=0.5,s=20, label="total ")
 
-        ax3.legend(framealpha = 0.0,edgecolor ='None',loc='best')
-        ax3.set_ylabel(r' $Angstrom^2 $ ', fontsize=14)
-        ax3.set_xlabel('z-distance [A]', fontsize=14)
-        ax3.set_title('Area in the xy plane occupied by atoms of each part of the system')
+        ax3.legend(framealpha = 0.0,edgecolor ='None',loc='best', fontsize=12)
+        ax3.set_ylabel(r' $Angstrom^2 $ ', fontsize=12)
+        ax3.set_xlabel('z-distance [Angstrom]', fontsize=12)
+        ax3.set_title('Area occupied different sub-systems', fontsize=12)
         ax3.grid(color ='gray', linestyle='-', linewidth=0.2)
         
         ax5 = plt.subplot(gs[3])
         plt.scatter(x = self.interval[2]*np.asarray(range(0,len(self.Rgr))),y=self.Rgr,color = 'blue',alpha=0.5,s=50)
-        ax5.set_ylabel('Rad. of gyration [A]', fontsize=14)
-        ax5.set_xlabel('frame', fontsize=14)
-        ax5.set_title('Rad. of Gyration (protein) ')
+        ax5.set_ylabel('Rad. of gyration [A]', fontsize=12)
+        ax5.set_xlabel('frame', fontsize=12)
+        ax5.set_title('Rad. of Gyration (protein) ', fontsize=12)
         ax5.grid(color='gray', linestyle='-', linewidth=0.2)
         ax5.set_ylim(0.5*max(self.Rgr),1.2*max(self.Rgr))
         plt.show()  
@@ -533,7 +544,7 @@ class Membrane_properties:
         """
         PARAMETERS:
         prot_slab_frame,mem_slab_frame - (z,x,y) matrix of atom densities  for protein and membrane, respectively
-        mem_slab_frame_zx -(z,x) membrane residue dencity in the x,z slab
+        mem_slab_frame_zx -(z,x) membrane residue density in the x,z slab
         area_x - (x,z) matrix of protein occupied area 
    
         """

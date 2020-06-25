@@ -102,4 +102,4 @@ Exploring the behavior of a membrane-protein system in MD simulations. The membr
 
 
 ![HSP90](/images/membrane_analysis.png)
-*Membrane 2D images*
+*Example of the  Membrane/protein  2D images in the xy plane*

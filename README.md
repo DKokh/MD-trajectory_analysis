@@ -8,7 +8,7 @@
    is reported in  D. B. Kokha, B. Doser, S. Richter, F. Ormersbach, X. Cheng , R.C. Wade  "A Workflow for Exploring Ligand Dissociation from a Macromolecule: Efficient Random Acceleration Molecular Dynamics Simulation and Interaction Fingerprints Analysis of Ligand Trajectories" (2020) submitted to JCP  
    
    
-## This repository (ecept for the membrane analysis part) has been transferred to https://github.com/HITS-MCM/MD-IFP/ and will be further maintained their
+## This repository (except for the membrane analysis part) is transferred to https://github.com/HITS-MCM/MD-IFP/ and will be further maintained their
 
 __Authors and Contributors:__
 

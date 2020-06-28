@@ -102,4 +102,5 @@ Exploring the behavior of a membrane-protein system in MD simulations. Lipid den
 
 
 ![HSP90](/images/membrane_analysis.png)
+
 *Example of the  Membrane/protein  2D images in the xy plane  (two upper plots)*

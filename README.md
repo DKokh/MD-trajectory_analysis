@@ -96,7 +96,7 @@ This example shows how RAMD dissociation trajectories can be analyzed using pre-
    
 ### IV. __membrane_analysis_example.ipynb__
 
-Exploring the behavior of a membrane-protein system in MD simulations. Lipid density is computed in the X/Y plane 
+Exploring the behavior of a membrane-protein system in MD simulations. Lipid density is computed in the X/Y plane (two upper plots)
 ![HSP90](/images/Membrane.png)
 *Illustratration of the analysis of the muscarinic receptor M2 GPCR embedded in a mixed membrane with 50% cholesterol content*
 

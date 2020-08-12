@@ -299,12 +299,14 @@ class trajectories:
             
         #--------------- find NAMD and RAMD trajectories and make a list
  #       print("looking for NAMD traj. in: ",PRJ_DIR+self.namd_tmpl+self.namd_traj_tmpl)
+        print("Equilibration trajectories will be searched using the template: ",PRJ_DIR+self.namd_tmpl+self.namd_traj_tmpl)
         for file_n in np.sort(glob.glob(PRJ_DIR+self.namd_tmpl+self.namd_traj_tmpl)): 
             if ((file_n.find("vel") < 0)  and (file_n.find("heat") < 0)) and os.path.isfile(file_n):
                 self.namd.repl_traj.append(file_n)
                 self.namd.names.append(os.path.basename(os.path.dirname(file_n)))
         print(len(self.namd.names)," Equilibration trajectories found")
                  
+        print("Dissociation trajectories will be searched using the template: ",PRJ_DIR+self.ramd_tmpl+self.ramd_traj_tmpl)
         for dir_ramd in np.sort(glob.glob(PRJ_DIR+self.ramd_tmpl)): 
             ramd_list = []
 #            print("looking for RAMD traj. in: ",dir_ramd+self.ramd_traj_tmpl)

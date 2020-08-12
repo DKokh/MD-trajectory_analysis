@@ -340,7 +340,7 @@ def make_IFT_table(IFP_prop_list,snaps,columns_extended = []):
 #     FUNCTION FOR generation of interaction fingerprints (IFP) in a trajectory
 #
 #######################################################################
-def IFP(u_mem,sel_ligands,property_list, WB_analysis = True, RE = True,Lipids = [],WB_order = 5):
+def IFP(u_mem,sel_ligands,property_list, WB_analysis = True, RE = True,Lipids = [],WB_debug = False):
     import datetime
     """
     Parameters:
@@ -387,7 +387,7 @@ def IFP(u_mem,sel_ligands,property_list, WB_analysis = True, RE = True,Lipids = 
 #            w.generate_table()
 #            df_WB = pd.DataFrame.from_records(w.table)
             ################ test
-        df_WB = Water_bridges(u_mem, sel_ligands)
+        df_WB = Water_bridges(u_mem, sel_ligands,WB_debug)
             ############### test ele1_index	sele2_index	sele1_resnm	sele1_resid	sele1_atom	sele2_resnm	sele2_resid	sele2_atom
 #        except:
 #            print("Water bridge analysis failed ")
@@ -829,7 +829,7 @@ def Plot_IF_trajectory(df_tot,ifp_type = np.asarray(['AR','HA','HD','HY','IP','I
 #
 ############################################
 
-def Water_bridges(u_mem, sel_ligands):
+def Water_bridges(u_mem, sel_ligands, WB_debug = False):
     """
     A very simple procedure for detection of possible protein-ligand water bridges 
     Parameters:
@@ -897,6 +897,7 @@ def Water_bridges(u_mem, sel_ligands):
     h.run()
     h.generate_table()
     wb1_tot = pd.DataFrame.from_records(h.table)
+    if WB_debug:  print("1, Lig-Wat"," -----------------\n",wb1_tot)
 # 2. make a list of water molecules 
     lista = []
     if not wb1_tot[wb1_tot.donor_resnm == sel_ligands].empty:
@@ -914,6 +915,7 @@ def Water_bridges(u_mem, sel_ligands):
         h.run()
         h.generate_table()
         wb2_tot = pd.DataFrame.from_records(h.table)
+        if WB_debug:  print("2, Prot-Wat"," -----------------\n",wb2_tot)
             
         if wb2_tot.shape[0] > 0: 
             # loop over frames
@@ -935,7 +937,7 @@ def Water_bridges(u_mem, sel_ligands):
 #                    if len(list_w_l) == 0: continue 
 #                    wb12 = wb12[(wb12.donor_resid.isin(list_w_l))].append(wb12[(wb12.acceptor_resid.isin(list_w_l))])
                     wb12 = clean_dataset(wb12,sel_ligands)
-#                    print(time," -----------------\n",wb12)
+                    if WB_debug: print(time," -----------------\n",wb12)
                     if wb12.empty: continue
                     wat_donor = wb12[wb12["donor_resnm"].isin(["WAT", "HOH", "SOL","TIP3"])]
                     wat_acceptor = wb12[wb12["acceptor_resnm"].isin(["WAT", "HOH", "SOL","TIP3"])]                   
@@ -972,7 +974,7 @@ def Water_bridges(u_mem, sel_ligands):
 #                                    print("Warning: problem with WB angles (maybe some residue numbers are duplicated): "+" resid "+str(wat_hid)+" "+wat_hat," resid "+str(wid)+" O","resid "+str(nowat_hid)+" "+nowat_hat)
                             if angles < angle_th:   
                                         wr =(wat_hid,nowat_hin)
-#                                        print("REMOVE incorrect H-bonds from the WB list:",wr,nowat_hid,nowat_hat)
+                                        if WB_debug:  print("REMOVE incorrect H-bonds from the WB list:",wr,nowat_hid,nowat_hat)
                                         wb12 = wb12[~((wb12.acceptor_resid == wr[0]) &  (wb12.donor_index == wr[1]))]
 #                                        print("INTERMEDIATE -----------------\n",wb12[( (wb12.acceptor_resid == wr[0]) & (wb12.donor_index == wr[1]))])
         
@@ -1019,7 +1021,7 @@ def Water_bridges(u_mem, sel_ligands):
 #                                    print("Warning: problem with WB angles (maybe some residue numbers are duplicated): "+" resid "+str(wat_hid)+" "+wat_hat," resid "+str(wid)+" O","resid "+str(oid_nonwat)+" "+oat_nonwat)
                             if angles < angle_th:   
                                         wr =(wat_hid,wat_hat,oin_nonwat)
-#                                        print("REMOVE incorrect H-bonds from the WB list:",wr,oid_nonwat, oat_nonwat)
+                                        if WB_debug:  print("REMOVE incorrect H-bonds from the WB list:",wr,oid_nonwat, oat_nonwat)
                                         wb12 = wb12[~((wb12.donor_resid == wr[0]) & (wb12.donor_atom == wr[1]) & (wb12.acceptor_index == wr[2]))]
                             
                                                        

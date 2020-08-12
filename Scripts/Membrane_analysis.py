@@ -132,6 +132,8 @@ def pbc_plane(ref,u,Rgr0,selection,shift=0):
     ref_mem = ref.select_atoms(selection)        
     u_CA = u.select_atoms("protein and not name H*")
     sel_p = "protein and not name H*"   
+    u.atoms.translate(np.multiply(-u_CA.center_of_mass()+0.5*u.dimensions[0:3],[1,1,0]))
+    u.atoms.pack_into_box(box=u.dimensions) 
                                                     
     u.atoms.translate(np.multiply(-u_mem.center_of_mass()+ref_mem.center_of_mass(),[0,0,1])+[0,0,shift]) # place membrane back in z
     u.atoms.pack_into_box(box=u.dimensions) 

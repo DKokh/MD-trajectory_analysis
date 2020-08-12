@@ -67,7 +67,7 @@ __Membrane_analysis.py__ - computation of the membrane surface area per lipid an
 ## Test Examples as Python Jupyter Notebooks :
 
 ### Data employed in test examples 
-   can be downloaded from  https://zenodo.org/record/3755337#.XrF-iGgzaUk
+   can be downloaded from  https://zenodo.org/record/3981155#.XzQEUCgzaUk
 
 ### I. __IFP_generation_examples_PDB.ipynb:__
 
